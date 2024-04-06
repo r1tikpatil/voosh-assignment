@@ -8,7 +8,7 @@ const {
   userDetails,
   allUsers,
   profileVisibility,
-  updateUserInfo
+  updateUserInfo,
 } = require("../controllers/user");
 
 router.post("/signup", register);

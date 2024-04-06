@@ -109,7 +109,6 @@ exports.userDetails = async (req, res) => {
 
     const user = await User.findOne({
       email: loggedInuser.email,
-      isAdmin: loggedInuser.isAdmin,
     }).select("-password -createdAt -updatedAt -__v");
 
     if (!user) {
@@ -155,6 +154,28 @@ exports.allUsers = async (req, res) => {
       success: true,
       message: "User details fetched successfully",
       data: users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+      error: error.message,
+    });
+  }
+};
+
+exports.profileVisibility = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const user = await User.findOne({
+      email: loggedInUser.email,
+    });
+
+    user.isPublic = !user.isPublic;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: "Profile visibility changed successfully",
     });
   } catch (error) {
     return res.status(500).json({

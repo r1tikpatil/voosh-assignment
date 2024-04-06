@@ -12,6 +12,8 @@ app.use(express.json());
 app.use("*", cors());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.use("/user", require("./routes/user"));
+
 app.listen(PORT, () => {
   console.log("Server is listening on port " + PORT);
 });

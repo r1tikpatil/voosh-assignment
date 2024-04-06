@@ -103,3 +103,34 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+exports.userDetails = async (req, res) => {
+  try {
+    const loggedInuser = req.user;
+
+    const user = await User.findOne({
+      email: loggedInuser.email,
+      isAdmin: loggedInuser.isAdmin,
+    }).select("-password -createdAt -updatedAt -__v");
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email or password!",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User details fetched successfully",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+      error,
+    });
+  }
+};
+

@@ -6,7 +6,8 @@ module.exports = async (req, res, next) => {
     const { authorization } = req.headers;
     if (!authorization) {
       return res.status(401).json({
-        error: "you must be logged in",
+        success: false,
+        message: "you must be logged in",
       });
     }
     const token = authorization.replace("Bearer ", "");
@@ -14,7 +15,8 @@ module.exports = async (req, res, next) => {
 
     if (!payload) {
       return res.status(401).json({
-        error: "you must be logged in",
+        success: false,
+        message: "you must be logged in",
       });
     }
 
@@ -22,9 +24,9 @@ module.exports = async (req, res, next) => {
     const user = await User.findById(_id);
 
     if (!user) {
-      console.log("Error in requireLogin middleware");
       return res.json({
-        error: err,
+        success: false,
+        message: "User does not exist",
       });
     }
     req.user = user;

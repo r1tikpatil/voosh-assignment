@@ -80,7 +80,9 @@ exports.login = async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
-      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
 
       return res.status(200).json({
         success: true,
@@ -164,6 +166,41 @@ exports.allUsers = async (req, res) => {
   }
 };
 
+exports.updateUserInfo = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+
+    const { name, email, password, bio, avatarUrl, phoneNumber } = req.body;
+
+    const user = await User.findOne({ email: loggedInUser.email });
+
+    if (name !== undefined && name !== null) user.name = name;
+    if (email !== undefined && email !== null) user.email = email;
+    if (password !== undefined && password !== null) {
+      const hashedPassword = await bcrypt.hash(password, 12);
+      user.password = hashedPassword;
+    }
+    if (bio !== undefined && bio !== null) user.bio = bio;
+    if (avatarUrl !== undefined && avatarUrl !== null)
+      user.avatarUrl = avatarUrl;
+    if (phoneNumber !== undefined && phoneNumber !== null)
+      user.phoneNumber = phoneNumber;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User info updated successfully`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+      error: error.message,
+    });
+  }
+};
+
 exports.profileVisibility = async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -175,7 +212,7 @@ exports.profileVisibility = async (req, res) => {
     await user.save();
     return res.status(200).json({
       success: true,
-      message: "Profile visibility changed successfully",
+      message: `Profile has set to ${user.isPublic ? "Public" : "Private"}.`,
     });
   } catch (error) {
     return res.status(500).json({

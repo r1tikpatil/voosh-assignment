@@ -58,7 +58,7 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password, isAdmin } = req.body;
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -69,7 +69,6 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({
       email,
-      isAdmin,
     });
 
     if (!user) {
@@ -134,3 +133,34 @@ exports.userDetails = async (req, res) => {
   }
 };
 
+exports.allUsers = async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const query = loggedInUser.isAdmin
+      ? {}
+      : { isPublic: true, isAdmin: false };
+
+    const users = await User.find(query).select(
+      "-password -createdAt -updatedAt -__v"
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No users found!",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User details fetched successfully",
+      data: users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error!",
+      error: error.message,
+    });
+  }
+};
